@@ -1,6 +1,6 @@
 import { StockPriceImpl } from "../stock-prices/stock-price-impl";
 import { StockSymbol } from "../stock-price-explorer/types";
-import { expect, test, it } from "vitest";
+import { expect, test } from "vitest";
 
 test("can init with empty input", () => {
   expect(() => new StockPriceImpl([])).not.toThrow();
