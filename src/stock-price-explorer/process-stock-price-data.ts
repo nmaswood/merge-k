@@ -1,4 +1,5 @@
-import { StockSymbol } from "./types";
+import { StockSymbol, DateWithPrices } from "./types";
+import { parseDate } from "./parse-date";
 
 export interface StockPriceExplorerInput {
   dates: string[];
@@ -6,8 +7,7 @@ export interface StockPriceExplorerInput {
 }
 
 export interface ProcessedStockPriceData {
-  dates: Date[];
-  prices: Record<StockSymbol, (number | null)[]>;
+  sortedDatesWithPrices: DateWithPrices[];
   stockSymbolsAlphabetical: StockSymbol[];
 }
 
@@ -15,21 +15,27 @@ export function processStockPriceData({
   dates,
   prices,
 }: StockPriceExplorerInput): ProcessedStockPriceData {
-  const parsedDates = dates.map(parseDate);
-  const stockSymbolsAlphabetical = [...new Set(Object.keys(prices))]
-    .sort()
-    .map(StockSymbol.of);
+  const datesWithPrices = dates.map((date, index) => {
+    const pricesForDate = Object.fromEntries(
+      Object.entries(prices).map(
+        ([stockSymbol, pricesForDates]) =>
+          [stockSymbol, pricesForDates[index]] as [string, number | null]
+      )
+    ) as Record<StockSymbol, number | null>;
+
+    return {
+      original: date,
+      date: parseDate(date),
+      pricesForDate,
+    };
+  });
 
   return {
-    dates: parsedDates,
-    stockSymbolsAlphabetical,
-    prices: prices as Record<StockSymbol, (number | null)[]>,
+    sortedDatesWithPrices: datesWithPrices
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .reverse(),
+    stockSymbolsAlphabetical: [...new Set(Object.keys(prices))]
+      .sort()
+      .map(StockSymbol.of),
   };
-}
-
-function parseDate(d: string): Date {
-  var [month, day, year] = d.split("/").map((n) => parseInt(n, 10));
-
-  // month index gotcha
-  return new Date(year, month - 1, day);
 }
