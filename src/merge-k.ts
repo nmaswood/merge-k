@@ -30,11 +30,8 @@ async function* merge2(a: LogSource, b: LogSource): LogSource {
 
   let aVal = await nextA();
   let bVal = await nextB();
-  console.log({ aVal, bVal });
 
-  debugger;
   while (true) {
-    console.log({ aVal, bVal });
     if (!aVal && !bVal) {
       break;
     } else if (!aVal && bVal) {
